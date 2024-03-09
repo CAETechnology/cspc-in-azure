@@ -1,0 +1,95 @@
+{
+ "$schema": "https://schema.management.azure.com/schemas/2019-08-01/subscriptionDeploymentTemplate.json#",
+ "contentVersion": "1.0.0.0",
+ "parameters": {
+  "resourceGroupName": {
+   "type": "string"
+  }
+ },
+ "variables": {
+  "mspOfferName": "CAE-CSPC-Azure",
+  "mspOfferDescription": "CSPC In Azure",
+  "mspRegistrationName": "[guid(variables('mspOfferName'))]",
+  "mspAssignmentName": "[guid(variables('mspOfferName'))]",
+  "managedByTenantId": "1235650d-e9c7-4180-98cf-0b182654bd5d",
+  "authorizations": [
+   {
+    "principalId": "27e4b670-8e52-41bd-bc90-df70852fb703",
+    "roleDefinitionId": "acdd72a7-3385-48ef-bd42-f606fba81ae7",
+    "principalIdDisplayName": "cspc-project"
+   },
+   {
+    "principalId": "5af42de3-51d1-49a3-a981-fe68925c8a71",
+    "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+    "principalIdDisplayName": "cspc-project-automation"
+   }
+  ],
+  "eligibleAuthorizations": [
+   {
+    "justInTimeAccessPolicy": {
+     "multiFactorAuthProvider": "Azure",
+     "maximumActivationDuration": "PT8H",
+     "managedByTenantApprovers": []
+    },
+    "principalId": "27e4b670-8e52-41bd-bc90-df70852fb703",
+    "principalIdDisplayName": "cspc-project",
+    "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+   }
+  ]
+ },
+ "resources": [
+  {
+   "type": "Microsoft.ManagedServices/registrationDefinitions",
+   "apiVersion": "2020-02-01-preview",
+   "name": "[variables('mspRegistrationName')]",
+   "properties": {
+    "registrationDefinitionName": "[variables('mspOfferName')]",
+    "description": "[variables('mspOfferDescription')]",
+    "managedByTenantId": "[variables('managedByTenantId')]",
+    "authorizations": "[variables('authorizations')]",
+    "eligibleAuthorizations": "[variables('eligibleAuthorizations')]"
+   }
+  },
+  {
+   "type": "Microsoft.Resources/deployments",
+   "apiVersion": "2018-05-01",
+   "name": "rgAssignment",
+   "resourceGroup": "[parameters('resourceGroupName')]",
+   "dependsOn": [
+    "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+   ],
+   "properties": {
+    "mode": "Incremental",
+    "template": {
+     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+     "contentVersion": "1.0.0.0",
+     "parameters": {},
+     "resources": [
+      {
+       "type": "Microsoft.ManagedServices/registrationAssignments",
+       "apiVersion": "2020-02-01-preview",
+       "name": "[variables('mspAssignmentName')]",
+       "properties": {
+        "registrationDefinitionId": "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "outputs": {
+  "mspOfferName": {
+   "type": "string",
+   "value": "[concat('Managed by', ' ', variables('mspOfferName'))]"
+  },
+  "authorizations": {
+   "type": "array",
+   "value": "[variables('authorizations')]"
+  },
+  "eligibleAuthorizations": {
+   "type": "array",
+   "value": "[variables('eligibleAuthorizations')]"
+  }
+ }
+}
