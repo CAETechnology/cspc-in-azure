@@ -10,8 +10,28 @@
         },
         "resourceGroupName": {
             "type": "string",
+            "defaultValue": "rg-cspc",
             "metadata": {
                 "description": "Name of the resource group to create."
+            }
+        },
+        "virtualNetworkId": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource ID of the virtual network to which the NIC will be assigned."
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource ID of the subnet to which the NIC will be assigned."
+            }
+        },
+        "networkInterfaceName": {
+            "type": "string",
+            "defaultValue": "vmcspc-nic",
+            "metadata": {
+                "description": "Name of the network interface."
             }
         }
     },
@@ -81,6 +101,25 @@
                     "contentVersion": "1.0.0.0",
                     "parameters": {},
                     "resources": [
+                        {
+                            "type": "Microsoft.Network/networkInterfaces",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('networkInterfaceName')]",
+                            "location": "[parameters('location')]",
+                            "properties": {
+                                "ipConfigurations": [
+                                    {
+                                        "name": "ipconfig1",
+                                        "properties": {
+                                            "privateIPAllocationMethod": "Dynamic",
+                                            "subnet": {
+                                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkId'), parameters('subnetName'))]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
                         {
                             "type": "Microsoft.ManagedServices/registrationAssignments",
                             "apiVersion": "2020-02-01-preview",
