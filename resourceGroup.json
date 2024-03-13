@@ -83,7 +83,6 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2018-05-01",
             "name": "rgAssignment",
-            "location": "[deployment().location]",
             "resourceGroup": "[parameters('resourceGroupName')]",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]",
@@ -108,7 +107,7 @@
                                         "properties": {
                                             "privateIPAllocationMethod": "Dynamic",
                                             "subnet": {
-                                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkId'), parameters('subnetName'))]"
+                                                "id": "[concat(parameters('virtualNetworkId'),'/subnets/',parameters('subnetName'))]"
                                             }
                                         }
                                     }
